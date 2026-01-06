@@ -1,0 +1,361 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+:root{
+    --font: 'Montserrat', sans-seri;
+}
+
+.heading{
+    margin-top: 3%;
+    width: 100%;
+}
+.heading h1{
+    font-family: var(--font);
+    font-size: 42px;
+    text-align: center;
+}
+span{
+    color: rgb(163, 163, 35);
+}
+.heading h3{
+    font-family: var(--font);
+    font-size: 34px;
+    text-align: center;
+}
+.heading button{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    margin-bottom: 5px;
+
+    font-family: var(--font);
+    font-size: 15px;
+    padding: 5px 5px 5px 5px;
+}
+.horizontal-sep{
+    height: 3px;
+    border-radius: 20px;
+    background-color: black;
+    display: block;
+    margin:0 auto;
+}
+#home-link{
+    position: absolute;
+    left: 5%;
+    font-family: var(--font);
+    font-size: 20px;
+    text-decoration: none;
+}
+#game-analysis-btn{
+    background-color: rgb(184, 178, 178);
+    font-family: var(--font);
+    font-size: 24px;
+    padding: 5px 5px 5px 5px;
+    color: white;
+    display: block;
+    margin: 0 auto;
+    border: none;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+#game-analysis-btn:hover{
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+    transform: translateY(-2px);
+    cursor: pointer;
+}
+
+/* ================ Home Page ================ */
+
+.notes{
+    width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+#bg{
+    background-color: rgb(205, 205, 205);
+    width: 100%;
+    height: 25vh;
+    max-height: 25vh;
+    padding: 20px 20px 20px 20px;
+}
+
+.grid-container{
+    display: grid;
+    margin: 0 auto;
+    gap: 20px;
+
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-auto-rows: 100px;
+
+    max-width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    
+}
+.sector{
+    max-width: 80%;
+    font-family: var(--font);
+    text-align: center;
+    padding: 15px 15px 15px 15px;
+    background-color: antiquewhite;
+    width: fit-content;
+    height: fit-content;
+    max-height: fit-content;
+}
+
+.sector a{
+    font-size: 24px;
+    text-decoration: none;
+    color: black;
+}
+.subtitles{
+    font-family: var(--font);
+}
+
+/* ================ Personal Notebook Entries ================ */
+
+.notes-head{
+    font-family: var(--font);
+    display: flex;
+    justify-content: space-evenly;
+    margin-top: 5%;
+}
+.notes-head div button{
+    width: 30%;
+    font-family: var(--font);
+    font-size: 15px;
+}
+.notes-head div {
+    width: 20%;
+    display: flex;
+    justify-content: space-evenly;
+    gap: 0;
+}
+
+.note-container{
+    margin: 0 auto;
+
+    max-width: 90vw;
+    display: flex;
+    box-sizing: border-box;
+    gap: 20px;
+
+    overflow-y: hidden;
+    overflow-x: auto;
+}
+.editor {
+    width: 100%;
+}
+.editor-wrapper h1{
+    text-align: center;
+    font-family: var(--font);
+    font-size: 22px;
+}
+.editor-wrapper{
+    flex: 0 0 auto;
+    width: 30vw;
+    min-width: 320px
+}
+
+/* ================ Team Data and Statistics ================ */
+
+.data-wrapper{
+    display: flex;
+    justify-content: space-around;
+}
+
+.data-wrapper h1{
+    font-family: var(--font);
+    font-size: 30px;
+}
+.team-comments, .team-stats{
+    text-align: center;
+    width: 50%;
+}
+
+/* ------- */
+.team-comments-wrapper{
+    height: 100%;
+    max-height: 70vh;
+    overflow-y: scroll;
+}
+.comments{
+    width: 100%;
+    max-width: 70%;
+    height: 100%;
+    max-height: 25vh;
+
+    display: block;
+    margin: 0 auto;
+    background-color: rgb(184, 178, 178);
+    padding: 10px 10px 10px 10px;
+
+    text-align: left;
+    font-family: var(--font);
+    font-size: 16px;
+
+    overflow-y: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.comments ul {
+    list-style-type: disc;
+    margin-left: 1.5em;
+}
+
+.comments li {
+    margin: 0.3em 0;
+}
+.notes::-webkit-scrollbar {
+    display: none;
+}
+.scouting-data-wrapper{
+    text-align: left;
+    margin-left: 10%;
+}
+.scouting-data-wrapper h3{
+    font-family: var(--font);
+    font-size: 24px;
+}
+
+/* ------- */
+/* ------- */
+
+.pit-form .form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+}
+.pit-form{
+    margin-top: 2%;
+}
+.pit-form label {
+    width: 150px;
+    margin-right: 10px;
+    font-family: var(--font);
+    font-size: 16px;
+}
+.pit-form input {
+    flex: 1;
+    max-width: 150px;
+}
+.pit-form button{
+    font-family: var(--font);
+    font-size: 16px;
+    padding: 5px;
+}
+
+/* ------- */
+/* ------- */
+
+.stats-wrapper h3{
+    font-family: var(--font);
+    font-size: 24px;
+}
+
+/* ================ Configuration ================ */
+
+.config-items{
+    display: flex;
+}
+.notebook-setup, .team-setup-wrapper, .events-wrapper{
+    flex: 1;
+}
+
+.notebook-setup{
+    text-align: center;
+    font-family: var(--font);
+}
+.name-container{
+    height: 60vh;
+    width: 60%;
+    background-color: rgb(212, 219, 226);
+    display: block;
+    margin: 0 auto;
+    overflow-y: auto;
+}
+.teams, .events{
+    height: 50vh;
+    width: 30vw;
+    background-color: rgb(212, 219, 226);
+    display: block;
+    margin: 0 auto;
+    overflow-y: auto;
+}
+.teams p{
+    max-width: 80%;
+    white-space: nowrap;
+    overflow-x: auto;   
+    display: block; 
+    scrollbar-color: rgba(0,0,0,0.3) transparent;
+}
+.teams::-webkit-scrollbar {
+    height: 3px;
+    background: transparent;
+}
+.teams::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.3);
+    border-radius: 4px;
+}
+
+.setup-container{
+    display: block;
+    margin: 0 auto;
+    width: fit-content;
+    height: fit-content;
+    font-family: var(--font);
+}
+.person{
+    background-color: rgb(158, 158, 159);
+    text-align: left;
+    width: 80%;
+    padding: 5px 5px 5px 5px;
+    font-size: 20px;
+    color: white;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5%;
+
+}
+.icon-btn{
+   transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.icon-btn:hover{
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+    transform: translateY(-2px);
+    cursor: pointer;
+}
+
+#save-btn{
+    font-family: var(--font);
+    font-size: 14px;
+    padding: 5px 5px 5px 5px;
+    display: block;
+    margin: 0 auto;
+}
+
+/* ------- */
+/* ------- */
+
+#league-options, #my-team{
+    font-family: var(--font);
+}
+
+.events-wrapper{
+    text-align: center;
+    font-family: var(--font);
+}
+.events{
+    width: 20vw;
+    height: 60vh;
+}
+.events p{
+    white-space: nowrap;
+    overflow-x: auto;   
+    display: block; 
+    scrollbar-color: rgba(0,0,0,0.3) transparent;
+    width: 85%;
+}

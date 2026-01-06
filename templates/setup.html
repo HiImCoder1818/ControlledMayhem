@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Configuration</title>
+</head>
+<body>
+    <a href="/" id="home-link"><span>Home</span></a>
+    <section class="heading">
+        <h1><span>Controlled Mayhem</span> Configuration Setup</h1>
+        <h3>Version: 0.3.0</h3>
+        <button id="save-btn">save</button>
+    </section>
+    <br>
+    
+    <section class="config-items">
+        <div class="notebook-setup">
+            <h1><i class="fa fa-plus-square icon-btn" id="add-person"></i> Personal Notebooks</h1>
+            <div class="horizontal-sep" style="width: 85%;"></div>
+            <br><br>
+            <div class="name-container">
+            </div>
+            <br>
+        </div>
+        <div class="team-setup-wrapper">
+            <div class="setup-container">
+                <h1 style="text-align: center;">
+                    <i class="fa fa-search icon-btn" id="search-team"></i> 
+                    <i class="fa fa-map-pin icon-btn" id="search-region"></i> 
+                    <i class="fa fa-plus-square icon-btn" id="add-team"></i> 
+                    Setup Teams</h1>
+                <div class="horizontal-sep" style="width: 100%;"></div>
+                <br><br>
+
+                <div>
+                    <label for="my-team">My Team Number</label>
+                    <input type="text" name="my-team" id="my-team" style="padding: 0px 3px 2px 3px;">
+                </div>
+                <p id="display-region">My Region: </p>
+                <p id="display-league">My League/Qualifiers: <select id="league-options"></select></p>
+                <br>
+                <div class="teams">
+                </div>
+                <br>
+            </div>
+        </div>
+        <div class="events-wrapper">
+            <h1><i class="fa fa-plus-square icon-btn" id="add-event"></i> Events</h1>
+            <div class="horizontal-sep" style="width: 60%;"></div>
+            <br><br>
+
+            <div class="events">
+
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let configs;
+        async function get_configs() {
+            const response = await fetch("/get-config");
+            const data = await response.json();
+            return data
+        }
+        async function set_configs(configs){
+            const response = await fetch("/set-config", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(configs)
+            });
+        }
+
+        const name_container = document.getElementsByClassName("name-container")[0];
+        const teams_container = document.getElementsByClassName("teams")[0];
+        const event_container = document.getElementsByClassName("events")[0];
+
+        const add_person_btn = document.getElementById("add-person");
+        const add_team_btn = document.getElementById("add-team");
+        const add_event_btn = document.getElementById("add-event");
+        const save_btn = document.getElementById("save-btn");
+
+        const search_region = document.getElementById("search-region");
+        const search_teams = document.getElementById("search-team");
+
+        const team_input = document.getElementById("my-team");
+        const region = document.getElementById("display-region");
+        const leagues = document.getElementById("league-options");
+
+        function get_person_html(name){
+            html = `
+            <div class="person">
+                <p>${name}</p>
+                <i class="fa fa-times icon-btn" id="${name.replaceAll(" ", "-")}" onclick="delete_person(this.id)"></i>
+            </div>
+            `
+
+            return html
+        }
+        async function load_region_info(){
+            leagues.replaceChildren();
+
+            team_input.value = configs["config"]["my-team"]
+            region.innerText = `My Region: ${configs["config"]["my-region"]}`
+
+            for (const event of configs["config"]["leagues"]){
+                const option = document.createElement("option");
+                option.textContent = event;
+                option.value = event
+                leagues.appendChild(option);
+            }
+            
+            leagues.value = configs["config"]["my-league"]
+
+        }
+
+        async function init(){
+            configs = await get_configs()
+            console.log(configs)
+
+            for (const person of configs["people"]){
+                name_container.innerHTML += get_person_html(person);
+            }
+            for (const team_number in configs["teams"]){
+                var full_team = `${team_number} ${configs["teams"][team_number]}`
+                teams_container.innerHTML += get_person_html(full_team);
+            }
+            for (const event of configs["events"]){
+                event_container.innerHTML += get_person_html(event);
+            }
+            var event_names = document.querySelectorAll(".events p");
+            for (const e of event_names){
+                e.scrollLeft = e.scrollWidth;
+            }
+
+            await load_region_info()
+        }
+        async function get_region_info(){
+            const info = await fetch("/get-region-info", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(configs)
+            });
+            configs = await info.json();
+            console.log(configs)
+
+            await load_region_info()
+        }
+
+        //================================
+        async function get_teams_list(league, region_code){
+            const info = await fetch("/get-teams-list", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "identifier": league, 
+                    "region_code": region_code, 
+                    "config": configs
+                })
+            });
+            configs = await info.json();
+
+            teams_container.innerHTML = "";
+            event_container.innerHTML = "";
+            for (const team_number in configs["teams"]){
+                var full_team = `${team_number} ${configs["teams"][team_number]}`
+                teams_container.innerHTML += get_person_html(full_team);
+            }
+            for (const event of configs["events"]){
+                event_container.innerHTML += get_person_html(event);
+            }
+
+            var event_names = document.querySelectorAll(".events p");
+            for (const e of event_names){
+                e.scrollLeft = e.scrollWidth;
+            }
+        }
+        //================================
+
+        function delete_person(id){
+            if (confirm("Are you sure you want to delete this")){
+                var person = document.getElementById(id);
+                const closest_div = person.closest(".person")
+
+                closest_div.remove()
+                var value = id.replaceAll("-", " ")
+
+                if (value[0] >= '0' && value[0] <= '9'){
+                    var team_number = value.split(" ")[0]
+                    delete configs["teams"][parseInt(team_number)]
+                }
+                else{
+                    configs["people"] = configs["people"].filter(item => item !== value)
+                    configs["events"] = configs["events"].filter(item => item !== value)
+                }
+                console.log(configs)
+            }
+        }
+
+        add_person_btn.onclick = ()=>{
+            var name = prompt("Enter Name");
+
+            configs["people"].push(name)
+            name_container.innerHTML += get_person_html(name);
+        }
+        add_team_btn.onclick = ()=>{
+            var name = prompt("Enter Team (Team number | Team Name)").split(" ");
+
+            configs["teams"][name[0]] = name.slice(1).join(" ");
+            teams_container.innerHTML += get_person_html(name.join(" "));
+        }
+        add_event_btn.onclick = ()=>{
+            var name = prompt("Enter Event name (Whatever you Want)");
+
+            configs["events"].push(name);
+            event_container.innerHTML += get_person_html(name);
+        }
+
+        search_region.onclick = ()=>{
+            var team_number = parseInt(team_input.value);
+            configs["config"]["my-team"] = team_number;
+            get_region_info()
+        }
+        search_teams.onclick = async ()=>{
+            await get_teams_list(leagues.value, configs["config"]["my-region"]);
+        }
+
+        save_btn.onclick = async ()=>{
+            configs["config"]["my-league"] = leagues.value
+            set_configs(configs)
+        }
+
+        async function start(){
+            await get_configs()
+            await init()   
+        }
+        start()
+
+    </script>
+</body>
+</html>

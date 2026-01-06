@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+        <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+        <title>Notebook</title>
+
+    </head>
+    <body>
+        <section class="notes-head">
+            <h1></h1>
+            <div>
+                <button onclick="save()">Save</button>
+                <button onclick="window.location.replace('/')">Home</button>
+            </div>
+        </section>
+        <br>
+        <div class="horizontal-sep" style="width: 75%;"></div>
+
+        <br><br>
+
+        <section class="note-container">
+        </section>
+        
+        <script>
+            const container = document.getElementsByClassName("note-container")[0]
+            const head = document.querySelector(".notes-head h1");
+            const editors = [];
+            const teams = [];
+
+            const user = "{{ user }}".replaceAll(" ", "-");
+            head.innerHTML = `${user.replaceAll("-", " ")}'s Personal Notes`
+
+            function get_editor_html(team){
+                html = `
+                <div class="editor-wrapper">
+                    <h1>${team}</h1>
+                    <div class="editor" id=${team.split(" ")[0]}></div>
+                </div>
+                `
+                return html
+            }
+            
+            function load_editors(){
+                fetch("/get-notes", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        "user": user,
+                        "teams": teams
+                    })
+                })
+                .then(res => res.json()).then((data)=>{
+                    var i = 0;
+                    document.querySelectorAll('.editor').forEach(el => {
+                        const editor = new toastui.Editor({
+                            el: el,
+                            height: '70vh',
+                            initialEditType: 'wysiwyg',
+                            previewStyle: 'vertical',
+                            initialValue: data[teams[i]]
+                        });
+                        editors[teams[i]] = editor;
+                        i++
+                    });
+
+                })
+            }
+
+            function save(){
+                var payload = {}
+
+                for (const team_number of teams){
+                    var text = editors[team_number].getMarkdown();
+                    payload[team_number] = text;
+                }
+                payload.user = user
+
+                fetch("/submit-notes", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                })
+            }
+
+            async function initialize_configs(){
+                const configs = await fetch('/get-config');
+                const data = await configs.json();
+
+                for (const team_number in data.teams) {
+                    const full_team = `${team_number} ${data.teams[team_number]}`;
+                    teams.push(team_number);
+                    container.innerHTML += get_editor_html(full_team);
+                }
+
+                load_editors();
+            }
+            
+            initialize_configs()
+        </script>
+
+    </body>
+</html>

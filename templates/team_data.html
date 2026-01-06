@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+        <title>Team Data</title>
+    </head>
+    <body>
+        <section class="heading">
+            <h3></h3>
+            <button onclick="window.location.replace('/')">Home</button>
+        </section>
+        <div class="horizontal-sep" style="width: 50%;"></div>
+        <br><br>
+
+        <section class="data-wrapper">
+            <section class="team-comments">
+                <h1>Team Notes</h1>
+                <br><br>
+
+                <div class="team-comments-wrapper">
+                </div>                
+            </section>
+
+            <section class="team-stats">
+                <h1>Team Statistics and Data</h1>
+                <br>
+                <select name="event" id="event" style="font-family: var(--font);">
+                    <!-- <option value="event-1">overall</option> -->
+                    <!-- <option value="event-1">event 1</option>
+                    <option value="event-2">event 2</option>
+                    <option value="event-3">event 3</option> -->
+                </select>
+                <br><br>
+
+                <div class="scouting-data-wrapper">
+                    <h3>Scouting Data</h3>
+                    <form action="/submit" method="POST" class="pit-form">
+                        <div class="form-row">
+                            <label for="max-auto">Max auto</label>
+                            <input type="text" name="max-auto" id="max-auto">
+                        </div>
+
+                        <div class="form-row">
+                            <label for="max-teleop">Max teleop</label>
+                            <input type="text" name="max-teleop">
+                        </div>
+
+                        <div class="form-row">
+                            <label for="sort">Can sort?</label>
+                            <select id="sort" name="sort">
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="turret">Turret?</label>
+                            <select id="turret" name="turret">
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="shoot-speed">Shoot Speed</label>
+                            <input type="text" name="shoot-speed">
+                        </div>
+
+                        <div class="form-row">
+                            <label for="endgame">Endgame</label>
+                            <input type="text" name="endgame">
+                        </div>
+
+                        <button type="submit">Save</button>
+                    </form>
+                </div>
+                
+                <br><br>
+
+                <div class="scouting-data-wrapper">
+                    <h3>Statistical Data</h3>
+                    <div class="pit-form">
+                        <div class="form-row">
+                            <label id="shooting-percentage" style="width: 240px;">Shooting Percentage: 0.00%</label>
+                        </div>
+                        <div class="form-row">
+                            <label id="auto-consistency" style="width: 240px;">Auto Consistency: 0.00%</label>
+                        </div>
+                        <div class="form-row">
+                            <label id="teleop-consistency" style="width: 240px;">Teleop Consistency: 0.00%</label>
+                        </div>
+                        <div class="form-row">
+                            <label id="artifact-per-auto" style="width: 240px;">Artifacts Per Auto: 0</label>
+                        </div>
+                        <div class="form-row">
+                            <label id="artifact-per-teleop" style="width: 240px;">Artifacts Per Teleop: 0</label>
+                        </div>
+                        <div class="form-row">
+                            <label id="foul-average" style="width: 240px;">Foul Average: 0</label>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+        </section>
+        
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <script>
+            function get_comments_html(comments, user){
+                html = `
+                <div class="comments">
+                    <strong>${user}</strong><br>
+                    <div class="horizontal-sep" style="width: 75%; margin:0;"></div><br>
+                    ${marked.parse(comments, { breaks: true })}
+                </div>
+                <br><br>
+                `
+                return html
+            }
+
+            const container = document.getElementsByClassName("team-comments-wrapper")[0];
+            const event_selector = document.getElementById("event");
+            const head = document.querySelector('.heading h3');
+
+            const pit_form = document.querySelector('.scouting-data-wrapper form.pit-form'); 
+            const pit_fields = pit_form.querySelectorAll('input, select');
+            const stats_wrapper = document.querySelectorAll('.scouting-data-wrapper')[1];
+            const stats_fields = stats_wrapper.querySelectorAll('.pit-form label')
+
+            const team_number = parseInt("{{ team }}".split("-")[0]);
+
+            let event;
+            head.innerHTML = "{{ team }}".replaceAll("-", " ");
+
+            async function update_pit_form(field){
+                const res = await fetch('/update-pit-form', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        "team": team_number,
+                        "event": event.replaceAll(" ", "-"),
+                        "field": field
+                    })
+                });
+            }
+
+            event_selector.addEventListener("change", (e) => {
+                event = event_selector.options[event_selector.selectedIndex].text;
+                load_stats(team_number, event);
+            });
+
+            pit_form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const inputs = pit_form.querySelectorAll('input, select');
+                const values = {};
+                inputs.forEach(field => {
+                    values[field.name] = field.value;
+                });
+
+                update_pit_form(values)
+            });
+
+            fetch("/team-notes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({"team": team_number})
+            }).then(res => res.json()).then(data => {
+                for (const user in data){
+                    container.innerHTML += get_comments_html(data[user], user)
+                }
+            });
+
+            async function load_stats(team_number, event) {
+                const response = await fetch("/team-stats", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        "team": team_number,
+                        "event": event.replaceAll(" ", "-")
+                    })
+                });
+
+                const data = await response.json();
+
+                pit_fields.forEach(field => {
+                    const name = field.name;
+                    if (data["pit_data"] && name in data["pit_data"]) {
+                        field.value = data["pit_data"][name];
+                    }
+                });
+
+                stats_fields.forEach(label => {
+                    const id = label.id;
+                    if (data["stats_data"] && id in data["stats_data"]) {
+                        label.textContent = label.textContent.split(':')[0] + ': ' + data["stats_data"][id];
+                    }
+                });
+            }
+
+            async function init() {
+                const res = await fetch("/get-config");
+                const config = await res.json();
+
+                for (const eventName of config["events"]) {
+                    const option = document.createElement("option");
+                    option.textContent = eventName;
+                    option.value = eventName;
+                    event_selector.appendChild(option);
+                    event = eventName
+                }
+
+                await load_stats(team_number, event);
+            }
+
+            init()
+
+        </script>
+    </body>
+</html>

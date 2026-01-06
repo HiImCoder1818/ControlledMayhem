@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
+        <title>Home</title>
+    </head>
+    <body>
+        <a href="/setup" id="home-link"><span>Configuration</span></a>
+        <section class="heading">
+            <h1><span>Controlled Mayhem</span></h1>
+            <h3>Version: 0.3.0</h3>
+        </section>
+        <br>
+
+        <section class="notes">
+            <h1 class="subtitles">Personal Notebooks</h1>
+            <div id="bg">
+                <div class="grid-container">
+                </div>
+            </div>
+        </section>
+
+        <br><br>
+
+        <section class="notes">
+            <h1 class="subtitles">Team Data</h1>
+            <div id="bg">
+                <div class="grid-container">
+                </div>
+            </div>
+        </section>
+
+        <br><br>
+        <button id="game-analysis-btn">Live Game Analysis</button>
+        <br><br>
+
+        <script>
+            const grid_containers = document.getElementsByClassName("grid-container");
+            
+            function get_sector_html(req, name){
+                username = name.replaceAll("-", " ")
+
+                html = `
+                <div class="sector">
+                    <a href="/${req}/${name}">${username}</a>
+                </div>`
+
+                return html
+            }
+
+            fetch('/get-config').then(response => {
+                return response.json();
+            }).then(data => {
+                for (const name of data.people){
+                    grid_containers[0].innerHTML += get_sector_html("notes", name)
+                }
+
+                for (const team_number in data.teams){
+                    var full_team = `${team_number}-${data.teams[team_number].replaceAll(" ", "-")}`
+                    grid_containers[1].innerHTML += get_sector_html("team_data", full_team)
+                }
+            })
+
+        </script>
+
+        <!-- 903 736 -->
+    </body>
+</html>
