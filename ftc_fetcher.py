@@ -44,8 +44,6 @@ class FTCInfoFetcher:
 
         events = r.json()["events"]
         qualifiers = defaultdict(str)
-        with open("test.json", "w") as f:
-            f.write(json.dumps(events, indent=4))
 
         for event in events:
             if event["regionCode"] == region_code and event["typeName"] == "Qualifier":
@@ -63,9 +61,6 @@ class FTCInfoFetcher:
         for team in teams["teams"]:
             full_teams[team["teamNumber"]] = team["nameShort"]
 
-        with open("test.json", "w") as f:
-            f.write(json.dumps(teams, indent=4))
-
         return full_teams
     
     def get_events(self, region_code, league_code=None, use_league=True):
@@ -79,9 +74,6 @@ class FTCInfoFetcher:
         events = r.json()["events"]
         filtered_events = defaultdict(str)
         filter_list = ["League Meet", "Qualifier", "Scrimmage", "League Tournament"]
-            
-        with open("test.json", "w") as f:
-            f.write(json.dumps(events, indent=4))
 
         for event in events:
             if (event["leagueCode"] == league_code or use_league) and event["regionCode"] == region_code:

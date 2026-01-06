@@ -9,10 +9,9 @@ import shutil
 from ftc_fetcher import FTCInfoFetcher
 
 app = Flask(__name__)
+
 fetcher = FTCInfoFetcher()
 current_dir = os.getcwd()
-
-import re
 
 def normalize(s):
     s = s.lower()

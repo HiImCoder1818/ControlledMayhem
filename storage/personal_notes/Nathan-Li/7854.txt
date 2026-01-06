@@ -1,2 +1,0 @@
-Test message
-**Bold as well**

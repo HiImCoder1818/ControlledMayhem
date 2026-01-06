@@ -1,4 +1,0 @@
-*testing italics*
-
-* num 1
-* num 2
