@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        
+    </head>
+    <body>
+        <a href="/" id="home-link" style="z-index: 2000;"><span style="color: white;">Home</span></a>
+
+        <div class="video-container">
+            <video id="game-video" autoplay playsinline muted></video>
+            <div class="vertical-slider"></div>
+            <div class="analysis-info">
+                <div class="info-wrapper">
+                    <div class="info-container" style="flex: 4;">
+                        <select id="events-select">
+                            <option value="none"></option>
+                        </select>
+                    </div>
+                    
+                    <div class="info-container" style="flex: 6; background-color: rgb(220, 220, 220);">
+                        <br>
+                        <strong><p style="text-align: center; color: blue;">Blue Alliance</p></strong><br>
+                        <div class="robot-stat" id="blue1">
+                            <strong><p style="text-align: center;">Unknown Team</p></strong>
+                            <br>
+                            <div class="stats">
+                                <p id="shooting-percentage">Shooting Percentage: 0</p>
+                                <p id="shooting-made">Shots Made: 0</p>
+                                <p id="shooting-missed">Shots Missed: 0</p>
+                                <p id="artifact-per-auto">Artifacts scored in Auto: 0</p>
+                                <p id="artifact-per-teleop">Artifacts scored in Teleop: 0</p>
+                                <p id="fouls">Fouls: 0</p>
+                            </div>
+                        </div>
+                        <div class="robot-stat" id="blue2">
+                            <strong><p style="text-align: center;">Unknown Team</p></strong>
+                            <br>
+                            <div class="stats">
+                                <p id="shooting-percentage">Shooting Percentage: 0</p>
+                                <p id="shooting-made">Shots Made: 0</p>
+                                <p id="shooting-missed">Shots Missed: 0</p>
+                                <p id="artifact-per-auto">Artifacts scored in Auto: 0</p>
+                                <p id="artifact-per-teleop">Artifacts scored in Teleop: 0</p>
+                                <p id="fouls">Fouls: 0</p>
+                            </div>
+                        </div>
+
+                        <br>
+                        <div class="horizontal-sep" style="width: 75%;"></div>
+                        <br>
+
+                        <strong><p style="text-align: center; color: red;">Red Alliance</p></strong><br>
+                        <div class="robot-stat" id="red1">
+                            <strong><p style="text-align: center;">Unknown Team</p></strong>
+                            <br>
+                            <div class="stats">
+                                <p id="shooting-percentage">Shooting Percentage: 0</p>
+                                <p id="shooting-made">Shots Made: 0</p>
+                                <p id="shooting-missed">Shots Missed: 0</p>
+                                <p id="artifact-per-auto">Artifacts scored in Auto: 0</p>
+                                <p id="artifact-per-teleop">Artifacts scored in Teleop: 0</p>
+                                <p id="fouls">Fouls: 0</p>
+                            </div>
+                        </div>
+                        <div class="robot-stat" id="red2">
+                            <strong><p style="text-align: center;">Unknown Team</p></strong>
+                            <br>
+                            <div class="stats">
+                                <p id="shooting-percentage">Shooting Percentage: 0</p>
+                                <p id="shooting-made">Shots Made: 0</p>
+                                <p id="shooting-missed">Shots Missed: 0</p>
+                                <p id="artifact-per-auto">Artifacts scored in Auto: 0</p>
+                                <p id="artifact-per-teleop">Artifacts scored in Teleop: 0</p>
+                                <p id="fouls">Fouls: 0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="{{ url_for('static', filename='scripts/webRTC.js') }}"></script>
+        <script>
+            let config;
+            let robot_ids = [
+                0,
+                67,
+                55,
+            ]
+            let stats_assignment = {
+                "red": {},
+                "blue": {}
+            }
+
+            async function get_configs() {
+                const response = await fetch("/get-config");
+                const data = await response.json();
+                return data
+            }
+
+            const slider = document.querySelector('.vertical-slider');
+            const analysis_bar = document.querySelector('.analysis-info')
+            const robot_id_container = document.getElementsByClassName("info-container")[0]
+            const events_selector = document.getElementById('events-select');
+
+            const blue1 = document.getElementById("blue1");
+            const blue2 = document.getElementById("blue2");
+            const red1 = document.getElementById("red1");
+            const red2 = document.getElementById("red2");
+
+            const blue1_stats = document.querySelector("#blue1 .stats");
+            const blue2_stats = document.querySelector("#blue2 .stats");
+            const red1_stats = document.querySelector("#red1 .stats");
+            const red2_stats = document.querySelector("#red2 .stats");
+
+            console.log(blue1_stats.querySelector("#shooting-percentage").innerHTML)
+            console.log(blue2_stats.querySelector("#shooting-percentage").innerHTML)
+            console.log(red1_stats.querySelector("#shooting-percentage").innerHTML)
+            console.log(red2_stats.querySelector("#shooting-percentage").innerHTML)
+
+            const window_width = window.innerWidth;
+            const initial_pos = parseFloat(localStorage.getItem("scroll-position")) || 0.7
+            let isDragging = false;
+            let event = "none";
+
+            document.addEventListener('change', async function (e) {
+                const isSelect = e.target.matches('select[id^="team-id-"]');
+                const isRadio  = e.target.matches('input[type="radio"][name^="id-"]');
+
+                if (!isSelect && !isRadio) return;
+
+                var id;
+                var team;
+
+                if (isSelect) {
+                    id = e.target.id.replace('team-id-', '');
+                    team = e.target.value;
+                } else {
+                    id = e.target.name.replace('id-', '');
+                    team = document.getElementById(`team-id-${id}`).value;
+                }
+
+                if (team === "no-team") return;
+
+                const checked = document.querySelector(
+                    `input[name="id-${id}"]:checked`
+                );
+
+                const alliance = checked ? checked.value : null;
+                if (alliance == null) return;
+
+                console.log(Object.keys(stats_assignment[alliance]).length)
+                if (Object.keys(stats_assignment[alliance]).length <= 1){
+                    if (alliance == "red"){
+                        stats_assignment["red"][id] = {"team": team}
+                        delete stats_assignment['blue'][id]
+                    }
+                    else{
+                        stats_assignment["blue"][id] = {"team": team}
+                        delete stats_assignment['red'][id]
+                    }
+
+                    if (event == "none"){
+                        alert("please select an event");
+                        document.querySelector(`input[name="id-${id}"]:checked`).checked = false;
+                    }
+                    else{
+                        console.log(stats_assignment)
+                        var s = await load_stats(team, event)
+                        stats_assignment[alliance][id]["stats"] = s
+
+                        update_team_names()
+                        update_team_stats()
+                    }
+                }
+                else{
+                    alert("Already 2 teams in alliance")
+                    document.querySelector(`input[name="id-${id}"]:checked`).checked = false;
+                }
+            });
+            async function load_stats(team, event){
+                var team_number = team.split("-")[0]
+                console.log(event)
+
+                const response = await fetch("/team-stats", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        "team": team_number,
+                        "event": event
+                    })
+                });
+
+                const data = await response.json();
+
+                return data["stats_data"]
+            }
+            
+            function update_team_names(){
+                const b1 = stats_assignment["blue"][0]["team"] ? stats_assignment["blue"][0]["team"].replaceAll("-", " ") : "Unknown Team";
+                const b2 = stats_assignment["blue"][1]["team"] ? stats_assignment["blue"][1]["team"].replaceAll("-", " ") : "Unknown Team";
+                const r1 = stats_assignment["red"][0]["team"] ? stats_assignment["red"][0]["team"].replaceAll("-", " ") : "Unknown Team";
+                const r2 = stats_assignment["red"][1]["team"] ? stats_assignment["red"][1]["team"].replaceAll("-", " ") : "Unknown Team";
+
+                blue1.querySelector("strong p").innerHTML = b1;
+                blue2.querySelector("strong p").innerHTML = b2;
+                red1.querySelector("strong p").innerHTML = r1;
+                red2.querySelector("strong p").innerHTML = r2;
+            }
+
+            function set_teams_selector(team){
+                for (const team_number in config["teams"]){
+                    var full_team = `${team_number} ${config["teams"][team_number]}`
+                    const option = document.createElement('option');
+                    option.value = full_team.replaceAll(" ", "-");
+                    option.textContent = full_team;
+                    team.appendChild(option);
+                }
+            }
+            async function init(){
+                config = await get_configs();
+                team_options = config["teams"];
+                
+                for (const event of config["events"]){
+                    const option = document.createElement('option');
+                    option.value = event.replaceAll(" ", "-"); 
+                    option.textContent = event;
+                    events_selector.appendChild(option);
+                }
+                for (const id of robot_ids){
+                    add_id(id)
+                }
+
+                document.getElementById('events-select').addEventListener('change', function() {
+                    event = this.value;
+                });
+
+            }
+
+            async function add_id(id){
+                html = `
+                <div class="robot-ids">
+                    <div>Robot ID: ${id}</div>
+                    <br>
+                    <div class="alliance">
+                        <div>
+                            <i class="fa fa-square" aria-hidden="true" style="color: red;"></i>
+                            <input type="radio" name="id-${id}" value="red" id="red">
+                        </div>
+                        <div>
+                            <i class="fa fa-square" aria-hidden="true" style="color: blue;"></i>
+                            <input type="radio" name="id-${id}" value="blue" id="blue">
+                        </div>
+                    </div> 
+                    <select id="team-id-${id}">
+                        <option value="no-team">No Team</option>
+                    </select>
+                </div>
+                `
+                robot_id_container.innerHTML += html
+                console.log(document.getElementById(`team-id-${id}`))
+                set_teams_selector(document.getElementById(`team-id-${id}`))
+            }
+
+            const sliderPos = initial_pos * window_width;
+            slider.style.left = sliderPos + 'px';
+            analysis_bar.style.width = (window_width - sliderPos) + 'px';
+
+            slider.addEventListener('mousedown', e => {
+                isDragging = true;
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', e => {
+                if (!isDragging) return;
+                let newLeft = Math.max(0, Math.min(window.innerWidth, e.clientX));
+
+                slider.style.left = newLeft + 'px';
+                var position = slider.style.left;
+
+                console.log(position)
+                console.log(window.innerWidth - newLeft)
+                console.log("============================")
+    
+                analysis_bar.style.width = (window.innerWidth - newLeft) + 'px';
+                video.style.width = position;   
+                localStorage.setItem("scroll-position", newLeft / window_width);
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            start();
+            init();
+        </script>
+        
+    </body>
+</html>

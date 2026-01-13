@@ -53,7 +53,9 @@ def make_config():
             "teleop-consistency": -1,
             "artifact-per-auto": -1,
             "artifact-per-teleop": -1,
-            "foul-average": -1
+            "foul-average": -1,
+            "shots-made": 0,
+            "shots-missed": 0,
         }
     }
 
@@ -69,7 +71,7 @@ def make_config():
             team_info_path = f"{current_dir}/storage/team_notes/{event.replace(' ', '-')}/{team_num}.json"
             if not os.path.exists(team_info_path):
                 with open(team_info_path, "w") as f:
-                    f.write(json.dumps(base_info))
+                    f.write(json.dumps(base_info, indent=4))
 
     people_dirs = [d.replace("-", " ") for d in os.listdir(f"{current_dir}/storage/personal_notes") if os.path.isdir(os.path.join(f"{current_dir}/storage/personal_notes", d))]
     to_delete = [x for x in people_dirs if x not in configs["people"]]
@@ -211,6 +213,9 @@ def index():
 @app.route('/setup')
 def setup():
     return render_template('setup.html')
+@app.route('/analysis')
+def analysis():
+    return render_template('live_analysis.html')
 
 if __name__ == '__main__':
-    app.run(port=8000, debug=True)
+    app.run(port=3000, debug=True)

@@ -1,11 +1,49 @@
 {
     "config": {
-        "leagues": [],
-        "my-league": "",
-        "my-region": "",
-        "my-team": -1
+        "leagues": [
+            "Folsom QT",
+            "Mountain View QT",
+            "NorCal FTC Central Valley League",
+            "NorCal FTC East Bay Hills League",
+            "NorCal FTC East Bay League",
+            "NorCal FTC North East League",
+            "NorCal FTC Peninsula League",
+            "NorCal FTC South Bay League",
+            "NorCal Screamage",
+            "Roseville QT",
+            "San Jose QT",
+            "Santa Clara QT",
+            "Saratoga QT",
+            "The Play Space",
+            "The Play Space QT"
+        ],
+        "my-league": "NorCal FTC South Bay League",
+        "my-region": "USCANO",
+        "my-team": 15385
     },
-    "events": [],
+    "events": [
+        "South Bay League Tournament",
+        "South Bay League Meet 1",
+        "South Bay League Meet 2",
+        "South Bay League Meet 3"
+    ],
     "people": [],
-    "teams": {}
+    "teams": {
+        "7854": "MidKnight Madness",
+        "12492": "Blender Bots",
+        "13190": "Roblivion",
+        "15385": "MidKnight Mayhem",
+        "16532": "Sparkbots",
+        "16688": "Wolfbotics",
+        "17835": "Mach 10",
+        "20367": "RMS OverDrive",
+        "20370": "RMS Phoenix",
+        "20373": "RMS Chimera",
+        "21781": "Pyro Lions",
+        "26106": "Emberbots",
+        "27009": "Inquiry Robotics",
+        "27021": "THE ANTS",
+        "27081": "OverDrive",
+        "30508": "Robostangs"
+    }
 }
