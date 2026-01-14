@@ -17,9 +17,12 @@
             <div class="analysis-info">
                 <div class="info-wrapper">
                     <div class="info-container" style="flex: 4;">
-                        <select id="events-select">
-                            <option value="none"></option>
-                        </select>
+                        <div class="save-controls">
+                            <select id="events-select">
+                                <option value="none"></option>
+                            </select>
+                            <button>Save Game Data</button>
+                        </div>
                     </div>
                     
                     <div class="info-container" style="flex: 6; background-color: rgb(220, 220, 220);">
@@ -30,8 +33,8 @@
                             <br>
                             <div class="stats">
                                 <p id="shooting-percentage">Shooting Percentage: 0</p>
-                                <p id="shooting-made">Shots Made: 0</p>
-                                <p id="shooting-missed">Shots Missed: 0</p>
+                                <p id="shots-made">Shots Made: 0</p>
+                                <p id="shots-missed">Shots Missed: 0</p>
                                 <p id="artifact-per-auto">Artifacts scored in Auto: 0</p>
                                 <p id="artifact-per-teleop">Artifacts scored in Teleop: 0</p>
                                 <p id="fouls">Fouls: 0</p>
@@ -42,8 +45,8 @@
                             <br>
                             <div class="stats">
                                 <p id="shooting-percentage">Shooting Percentage: 0</p>
-                                <p id="shooting-made">Shots Made: 0</p>
-                                <p id="shooting-missed">Shots Missed: 0</p>
+                                <p id="shots-made">Shots Made: 0</p>
+                                <p id="shots-missed">Shots Missed: 0</p>
                                 <p id="artifact-per-auto">Artifacts scored in Auto: 0</p>
                                 <p id="artifact-per-teleop">Artifacts scored in Teleop: 0</p>
                                 <p id="fouls">Fouls: 0</p>
@@ -60,8 +63,8 @@
                             <br>
                             <div class="stats">
                                 <p id="shooting-percentage">Shooting Percentage: 0</p>
-                                <p id="shooting-made">Shots Made: 0</p>
-                                <p id="shooting-missed">Shots Missed: 0</p>
+                                <p id="shots-made">Shots Made: 0</p>
+                                <p id="shots-missed">Shots Missed: 0</p>
                                 <p id="artifact-per-auto">Artifacts scored in Auto: 0</p>
                                 <p id="artifact-per-teleop">Artifacts scored in Teleop: 0</p>
                                 <p id="fouls">Fouls: 0</p>
@@ -72,8 +75,8 @@
                             <br>
                             <div class="stats">
                                 <p id="shooting-percentage">Shooting Percentage: 0</p>
-                                <p id="shooting-made">Shots Made: 0</p>
-                                <p id="shooting-missed">Shots Missed: 0</p>
+                                <p id="shots-made">Shots Made: 0</p>
+                                <p id="shots-missed">Shots Missed: 0</p>
                                 <p id="artifact-per-auto">Artifacts scored in Auto: 0</p>
                                 <p id="artifact-per-teleop">Artifacts scored in Teleop: 0</p>
                                 <p id="fouls">Fouls: 0</p>
@@ -86,11 +89,20 @@
 
         <script src="{{ url_for('static', filename='scripts/webRTC.js') }}"></script>
         <script>
+            let metrics = [
+                "shooting-percentage", 
+                "shots-made", 
+                "shots-missed", 
+                "artifact-per-auto", 
+                "artifact-per-teleop", 
+                "fouls"
+            ];
             let config;
             let robot_ids = [
                 0,
-                67,
                 55,
+                67,
+                420
             ]
             let stats_assignment = {
                 "red": {},
@@ -117,11 +129,6 @@
             const blue2_stats = document.querySelector("#blue2 .stats");
             const red1_stats = document.querySelector("#red1 .stats");
             const red2_stats = document.querySelector("#red2 .stats");
-
-            console.log(blue1_stats.querySelector("#shooting-percentage").innerHTML)
-            console.log(blue2_stats.querySelector("#shooting-percentage").innerHTML)
-            console.log(red1_stats.querySelector("#shooting-percentage").innerHTML)
-            console.log(red2_stats.querySelector("#shooting-percentage").innerHTML)
 
             const window_width = window.innerWidth;
             const initial_pos = parseFloat(localStorage.getItem("scroll-position")) || 0.7
@@ -170,12 +177,11 @@
                         document.querySelector(`input[name="id-${id}"]:checked`).checked = false;
                     }
                     else{
-                        console.log(stats_assignment)
                         var s = await load_stats(team, event)
                         stats_assignment[alliance][id]["stats"] = s
-
-                        update_team_names()
-                        update_team_stats()
+                        console.log(stats_assignment)
+                        update_team_names();
+                        update_team_stats();
                     }
                 }
                 else{
@@ -185,7 +191,6 @@
             });
             async function load_stats(team, event){
                 var team_number = team.split("-")[0]
-                console.log(event)
 
                 const response = await fetch("/team-stats", {
                     method: "POST",
@@ -198,19 +203,50 @@
 
                 const data = await response.json();
 
+                delete data["stats_data"]["auto-consistency"]
+                delete data["stats_data"]["teleop-consistency"]
+
                 return data["stats_data"]
             }
             
             function update_team_names(){
-                const b1 = stats_assignment["blue"][0]["team"] ? stats_assignment["blue"][0]["team"].replaceAll("-", " ") : "Unknown Team";
-                const b2 = stats_assignment["blue"][1]["team"] ? stats_assignment["blue"][1]["team"].replaceAll("-", " ") : "Unknown Team";
-                const r1 = stats_assignment["red"][0]["team"] ? stats_assignment["red"][0]["team"].replaceAll("-", " ") : "Unknown Team";
-                const r2 = stats_assignment["red"][1]["team"] ? stats_assignment["red"][1]["team"].replaceAll("-", " ") : "Unknown Team";
+                var red_assignment = Object.values(stats_assignment["red"]);
+                var blue_assignment = Object.values(stats_assignment["blue"]);
+
+                console.log(red_assignment)
+                console.log(blue_assignment)
+
+                const b1 = blue_assignment?.[0]?.team?.replaceAll("-", " ") ?? "Unknown Team";
+                const b2 = blue_assignment?.[1]?.team?.replaceAll("-", " ") ?? "Unknown Team";
+                const r1 = red_assignment?.[0]?.team?.replaceAll("-", " ") ?? "Unknown Team";
+                const r2 = red_assignment?.[1]?.team?.replaceAll("-", " ") ?? "Unknown Team";
 
                 blue1.querySelector("strong p").innerHTML = b1;
                 blue2.querySelector("strong p").innerHTML = b2;
                 red1.querySelector("strong p").innerHTML = r1;
                 red2.querySelector("strong p").innerHTML = r2;
+            }
+
+            function update_team_stats(){
+                var red_assignment = Object.values(stats_assignment["red"]);
+                var blue_assignment = Object.values(stats_assignment["blue"]);
+
+                const b1 = blue_assignment?.[0]?.stats;
+                const b2 = blue_assignment?.[1]?.stats;
+                const r1 = red_assignment?.[0]?.stats;
+                const r2 = red_assignment?.[1]?.stats;
+
+                const blue1_e = blue1.querySelector(".stats");
+                const blue2_e = blue2.querySelector(".stats");
+                const red1_e = red1.querySelector(".stats");
+                const red2_e = red2.querySelector(".stats");
+                
+                for (const metric of metrics){
+                    blue1_e.querySelector(`#${metric}`).innerHTML = `${metric.replaceAll("-", " ")}: ${b1?.[metric]}`;
+                    blue2_e.querySelector(`#${metric}`).innerHTML = `${metric.replaceAll("-", " ")}: ${b2?.[metric]}`;
+                    red1_e.querySelector(`#${metric}`).innerHTML = `${metric.replaceAll("-", " ")}: ${r1?.[metric]}`;
+                    red2_e.querySelector(`#${metric}`).innerHTML = `${metric.replaceAll("-", " ")}: ${r2?.[metric]}`;
+                }
             }
 
             function set_teams_selector(team){
@@ -263,7 +299,6 @@
                 </div>
                 `
                 robot_id_container.innerHTML += html
-                console.log(document.getElementById(`team-id-${id}`))
                 set_teams_selector(document.getElementById(`team-id-${id}`))
             }
 

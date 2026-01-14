@@ -410,11 +410,20 @@ span{
     font-size: 16px;
     overflow-y: auto;
 }
+.save-controls button{
+    font-family: var(--font);
+    font-size: 16px;
+    margin: 10px 10px 10px 10px;
+}
+.save-controls{
+    display: flex;
+    justify-content: space-evenly;
+}
+
 #events-select{
     font-family: var(--font);
     font-size: 16px;
-    display: block;
-    margin: 0 auto;
+    
     margin-top: 1%;
 }
 
