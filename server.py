@@ -6,12 +6,30 @@ import os
 import re
 import shutil
 
+import asyncio
+import threading
+from aiortc import RTCPeerConnection, RTCSessionDescription, VideoStreamTrack
+from av import VideoFrame
+import numpy as np
+
 from ftc_fetcher import FTCInfoFetcher
 
 app = Flask(__name__)
 
 fetcher = FTCInfoFetcher()
 current_dir = os.getcwd()
+
+pcs = set()
+latest_frame = None
+frame_lock = threading.Lock()
+
+loop = asyncio.new_event_loop()
+
+def run_loop():
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
+
+threading.Thread(target=run_loop, daemon=True).start()
 
 def normalize(s):
     s = s.lower()
@@ -201,6 +219,86 @@ def submit_notes():
 
     return "", 200
 
+@app.route("/offer", methods=["POST"])
+def offer():
+    global latest_frame
+    data = request.json
+    pc = RTCPeerConnection()
+    pcs.add(pc)
+
+    @pc.on("track")
+    async def on_track(track):
+        global latest_frame
+        print("Track received:", track.kind)
+        if track.kind == "video":
+            while True:
+                frame = await track.recv()
+                with frame_lock:
+                    latest_frame = frame.to_ndarray(format="bgr24")
+
+    async def handle_offer():
+        offer = RTCSessionDescription(sdp=data["sdp"], type=data["type"])
+        await pc.setRemoteDescription(offer)
+        answer = await pc.createAnswer()
+        await pc.setLocalDescription(answer)
+        return pc.localDescription
+
+    answer = asyncio.run_coroutine_threadsafe(handle_offer(), loop).result()
+    return jsonify({"sdp": answer.sdp, "type": answer.type})
+
+# ---------------- Forward track to AI backend ----------------
+
+class ForwardTrack(VideoStreamTrack):
+    """
+    Sends latest_frame continuously to AI backend.
+    """
+    def __init__(self):
+        super().__init__()
+
+    async def recv(self):
+        pts, time_base = await self.next_timestamp()
+
+        frame = None
+        with frame_lock:
+            if latest_frame is not None:
+                frame = latest_frame.copy()
+
+        if frame is None:
+            frame = 255 * np.zeros((480, 640, 3), dtype=np.uint8)
+
+        video_frame = VideoFrame.from_ndarray(frame, format="bgr24")
+        video_frame.pts = pts
+        video_frame.time_base = time_base
+        return video_frame
+
+async def forward_to_ai_server():
+    import aiohttp
+    pc = RTCPeerConnection()
+    pcs.add(pc)
+
+    pc.addTrack(ForwardTrack())
+
+    async with aiohttp.ClientSession() as session:
+        # Create local offer
+        offer = await pc.createOffer()
+        await pc.setLocalDescription(offer)
+
+        # Send offer to AI backend
+        async with session.post("http://127.0.0.1:5000/offer", json={
+            "sdp": pc.localDescription.sdp,
+            "type": pc.localDescription.type
+        }) as resp:
+            answer_data = await resp.json()
+
+        await pc.setRemoteDescription(RTCSessionDescription(
+            sdp=answer_data["sdp"],
+            type=answer_data["type"]
+        ))
+    print("Forwarding to AI backend established.")
+
+# ---------------- Main ----------------
+
+
 @app.route('/notes/<username>')
 def notes(username):
     return render_template('notebook.html', user=username)
@@ -218,4 +316,6 @@ def analysis():
     return render_template('live_analysis.html')
 
 if __name__ == '__main__':
+    asyncio.run_coroutine_threadsafe(forward_to_ai_server(), loop)
+
     app.run(port=3000, debug=True)

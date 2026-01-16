@@ -27,7 +27,10 @@
         "South Bay League Meet 2",
         "South Bay League Meet 3"
     ],
-    "people": [],
+    "people": [
+        "Nathan Li",
+        "Aiden Carvalho"
+    ],
     "teams": {
         "7854": "MidKnight Madness",
         "12492": "Blender Bots",

@@ -34,7 +34,7 @@ video.onloadedmetadata = () => {
 
     video.style.width = `${width}px`;
     video.style.height = `${height}px`;
-    video.style.opacity = 0;
+    //video.style.opacity = 0;
 
     console.log(video.videoWidth)
     console.log(video.videoHeight)
