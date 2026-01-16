@@ -1,10 +1,11 @@
 {
     "pit_data": {
-        "max-auto": -1,
-        "max-teleop": -1,
+        "max-auto": "15",
+        "max-teleop": "-1",
         "sort": "",
         "turret": "",
-        "shoot-speed": -1,
+        "far-close": "Far",
+        "shoot-speed": "-1",
         "endgame": ""
     },
     "stats_data": {
@@ -13,7 +14,6 @@
         "teleop-consistency": -1,
         "artifact-per-auto": -1,
         "artifact-per-teleop": -1,
-        "foul-average": -1,
         "shots-made": 0,
         "shots-missed": 0
     }

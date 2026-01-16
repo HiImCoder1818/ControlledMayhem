@@ -1,10 +1,21 @@
 const pc = new RTCPeerConnection();
 const video = document.getElementById("game-video");
+const canvas = document.getElementById("game-video-overlay");
 
 async function start() {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     stream.getTracks().forEach(track => pc.addTrack(track, stream));
     video.srcObject = stream;
+    // const stream = await navigator.mediaDevices.getDisplayMedia({
+    //     video: {
+    //         frameRate: { ideal: 60, max: 60 },
+    //         cursor: "always"
+    //     },
+    //     audio: false
+    // });
+
+    // stream.getTracks().forEach(track => pc.addTrack(track, stream));
+    // video.srcObject = stream;
 
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
@@ -34,6 +45,8 @@ video.onloadedmetadata = () => {
 
     video.style.width = `${width}px`;
     video.style.height = `${height}px`;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
     //video.style.opacity = 0;
 
     console.log(video.videoWidth)

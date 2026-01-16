@@ -65,6 +65,14 @@
                         </div>
 
                         <div class="form-row">
+                            <label for="far-close">Far or Close?</label>
+                            <select id="far-close" name="far-close">
+                                <option value="Far">Far</option>
+                                <option value="Close">Close</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
                             <label for="shoot-speed">Shoot Speed</label>
                             <input type="text" name="shoot-speed">
                         </div>
@@ -98,10 +106,6 @@
                         <div class="form-row">
                             <label id="artifact-per-teleop" style="width: 240px;">Artifacts Per Teleop: 0</label>
                         </div>
-                        <div class="form-row">
-                            <label id="foul-average" style="width: 240px;">Foul Average: 0</label>
-                        </div>
-
                     </div>
                 </div>
             </section>
@@ -137,6 +141,7 @@
             head.innerHTML = "{{ team }}".replaceAll("-", " ");
 
             async function update_pit_form(field){
+                console.log(field)
                 const res = await fetch('/update-pit-form', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

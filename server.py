@@ -11,6 +11,7 @@ import threading
 from aiortc import RTCPeerConnection, RTCSessionDescription, VideoStreamTrack
 from av import VideoFrame
 import numpy as np
+import websockets
 
 from ftc_fetcher import FTCInfoFetcher
 
@@ -21,7 +22,9 @@ current_dir = os.getcwd()
 
 pcs = set()
 latest_frame = None
+latest_bboxes = None
 frame_lock = threading.Lock()
+bboxes_lock = threading.Lock()
 
 loop = asyncio.new_event_loop()
 
@@ -62,6 +65,7 @@ def make_config():
             "max-teleop": -1,
             "sort": "",
             "turret": "",
+            "far-close": "",
             "shoot-speed": -1,
             "endgame": ""
         },
@@ -71,7 +75,6 @@ def make_config():
             "teleop-consistency": -1,
             "artifact-per-auto": -1,
             "artifact-per-teleop": -1,
-            "foul-average": -1,
             "shots-made": 0,
             "shots-missed": 0,
         }
@@ -246,6 +249,36 @@ def offer():
     answer = asyncio.run_coroutine_threadsafe(handle_offer(), loop).result()
     return jsonify({"sdp": answer.sdp, "type": answer.type})
 
+@app.route("/latest-bboxes")
+def get_latest_bboxes():
+    with bboxes_lock:
+        data = latest_bboxes.copy() if latest_bboxes else {}
+
+    return jsonify(data)
+
+async def connect_bbox_ws():
+    global latest_bboxes
+    uri = "ws://127.0.0.1:8000/ws/bboxes"
+
+    while True:
+        try:
+            async with websockets.connect(uri, ping_interval=None) as ws:
+                print("[Flask] Connected to bbox websocket")
+
+                async for msg in ws:
+                    data = json.loads(msg)
+                    with bboxes_lock:
+                        latest_bboxes = data
+
+        except Exception as e:
+            print("[Flask] BBox WS disconnected, retrying in 1s...", e)
+            await asyncio.sleep(1)
+
+def start_bbox_ws_loop():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(connect_bbox_ws())
+
 # ---------------- Forward track to AI backend ----------------
 
 class ForwardTrack(VideoStreamTrack):
@@ -284,7 +317,7 @@ async def forward_to_ai_server():
         await pc.setLocalDescription(offer)
 
         # Send offer to AI backend
-        async with session.post("http://127.0.0.1:5000/offer", json={
+        async with session.post("http://127.0.0.1:8000/offer", json={
             "sdp": pc.localDescription.sdp,
             "type": pc.localDescription.type
         }) as resp:
@@ -317,5 +350,6 @@ def analysis():
 
 if __name__ == '__main__':
     asyncio.run_coroutine_threadsafe(forward_to_ai_server(), loop)
+    threading.Thread(target=start_bbox_ws_loop, daemon=True).start()
 
     app.run(port=3000, debug=True)

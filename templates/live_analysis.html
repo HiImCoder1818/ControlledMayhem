@@ -12,7 +12,10 @@
         <a href="/" id="home-link" style="z-index: 2000;"><span style="color: white;">Home</span></a>
 
         <div class="video-container">
-            <video id="game-video" autoplay playsinline muted></video>
+            <div style="position: relative; display: inline-block;">
+                <video id="game-video" autoplay playsinline muted></video>
+                <canvas id="game-video-overlay" style="position: absolute; top: 0; left: 0; z-index: 1000;"></canvas>
+            </div>
             <div class="vertical-slider"></div>
             <div class="analysis-info">
                 <div class="info-wrapper">
@@ -37,7 +40,6 @@
                                 <p id="shots-missed">Shots Missed: 0</p>
                                 <p id="artifact-per-auto">Artifacts scored in Auto: 0</p>
                                 <p id="artifact-per-teleop">Artifacts scored in Teleop: 0</p>
-                                <p id="fouls">Fouls: 0</p>
                             </div>
                         </div>
                         <div class="robot-stat" id="blue2">
@@ -49,7 +51,6 @@
                                 <p id="shots-missed">Shots Missed: 0</p>
                                 <p id="artifact-per-auto">Artifacts scored in Auto: 0</p>
                                 <p id="artifact-per-teleop">Artifacts scored in Teleop: 0</p>
-                                <p id="fouls">Fouls: 0</p>
                             </div>
                         </div>
 
@@ -67,7 +68,6 @@
                                 <p id="shots-missed">Shots Missed: 0</p>
                                 <p id="artifact-per-auto">Artifacts scored in Auto: 0</p>
                                 <p id="artifact-per-teleop">Artifacts scored in Teleop: 0</p>
-                                <p id="fouls">Fouls: 0</p>
                             </div>
                         </div>
                         <div class="robot-stat" id="red2">
@@ -79,7 +79,6 @@
                                 <p id="shots-missed">Shots Missed: 0</p>
                                 <p id="artifact-per-auto">Artifacts scored in Auto: 0</p>
                                 <p id="artifact-per-teleop">Artifacts scored in Teleop: 0</p>
-                                <p id="fouls">Fouls: 0</p>
                             </div>
                         </div>
                     </div>
@@ -88,6 +87,7 @@
         </div>
 
         <script src="{{ url_for('static', filename='scripts/webRTC.js') }}"></script>
+        <script src="{{ url_for('static', filename='scripts/drawing.js') }}"></script>
         <script>
             let metrics = [
                 "shooting-percentage", 
@@ -95,7 +95,6 @@
                 "shots-missed", 
                 "artifact-per-auto", 
                 "artifact-per-teleop", 
-                "fouls"
             ];
             let config;
             let robot_ids = [
@@ -301,6 +300,7 @@
                 robot_id_container.innerHTML += html
                 set_teams_selector(document.getElementById(`team-id-${id}`))
             }
+            
 
             const sliderPos = initial_pos * window_width;
             slider.style.left = sliderPos + 'px';

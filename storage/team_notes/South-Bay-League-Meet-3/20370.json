@@ -4,6 +4,7 @@
         "max-teleop": -1,
         "sort": "",
         "turret": "",
+        "far-close": "",
         "shoot-speed": -1,
         "endgame": ""
     },
@@ -13,7 +14,6 @@
         "teleop-consistency": -1,
         "artifact-per-auto": -1,
         "artifact-per-teleop": -1,
-        "foul-average": -1,
         "shots-made": 0,
         "shots-missed": 0
     }
