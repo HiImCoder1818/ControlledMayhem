@@ -117,7 +117,7 @@
             function get_comments_html(comments, user){
                 html = `
                 <div class="comments">
-                    <strong>${user}</strong><br>
+                    <strong>${user.replaceAll("-", " ")}</strong><br>
                     <div class="horizontal-sep" style="width: 75%; margin:0;"></div><br>
                     ${marked.parse(comments, { breaks: true })}
                 </div>
@@ -137,7 +137,7 @@
 
             const team_number = parseInt("{{ team }}".split("-")[0]);
 
-            let event;
+            let event = localStorage.getItem("current-event");
             head.innerHTML = "{{ team }}".replaceAll("-", " ");
 
             async function update_pit_form(field){
@@ -155,6 +155,7 @@
 
             event_selector.addEventListener("change", (e) => {
                 event = event_selector.options[event_selector.selectedIndex].text;
+                localStorage.setItem("current-event", event);
                 load_stats(team_number, event);
             });
 
@@ -210,14 +211,21 @@
                 const res = await fetch("/get-config");
                 const config = await res.json();
 
+                console.log(config["events"])
                 for (const eventName of config["events"]) {
                     const option = document.createElement("option");
                     option.textContent = eventName;
                     option.value = eventName;
                     event_selector.appendChild(option);
-                    event = eventName
+                    console.log(eventName)
                 }
-
+                if (event !== null){
+                    event_selector.options[event_selector.selectedIndex].text = event;
+                }
+                if (config["events"].length == 1){
+                    event = config["events"][0];
+                }
+                
                 await load_stats(team_number, event);
             }
 

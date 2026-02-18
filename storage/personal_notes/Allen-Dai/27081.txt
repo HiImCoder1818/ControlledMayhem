@@ -1,0 +1,5 @@
+3ball auto
+24 ball teleop
+average 20 ball teleop
+90% accuracy
+endgame: prefer park first, have extra space

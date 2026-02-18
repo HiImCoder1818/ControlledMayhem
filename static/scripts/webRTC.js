@@ -1,9 +1,10 @@
 const pc = new RTCPeerConnection();
 const video = document.getElementById("game-video");
 const canvas = document.getElementById("game-video-overlay");
+let stream;
 
 async function start() {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     stream.getTracks().forEach(track => pc.addTrack(track, stream));
     video.srcObject = stream;
     // const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -16,11 +17,18 @@ async function start() {
 
     // stream.getTracks().forEach(track => pc.addTrack(track, stream));
     // video.srcObject = stream;
+    pc.getTransceivers().forEach(t => {
+        if (t.sender && t.sender.track?.kind === "video") {
+            const codecs = RTCRtpSender.getCapabilities("video").codecs;
+            t.setCodecPreferences(codecs.filter(c => c.mimeType === "video/H264"));
+        }
+    });
+
 
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
 
-    const res = await fetch("/offer", {
+    const res = await fetch("http://localhost:8000/offer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pc.localDescription)
@@ -29,6 +37,17 @@ async function start() {
     const answer = await res.json();
     await pc.setRemoteDescription(answer);
 }
+
+async function endRecording() {
+    console.log("Trying to end recording")
+    pc.close()
+    pc = null;
+    await fetch("http://localhost:8000/stop-recording", {
+        headers: { "Content-Type": "application/json" },
+        method: "POST"
+    })
+}
+
 video.onloadedmetadata = () => {
     const vw = video.videoWidth;
     const vh = video.videoHeight;

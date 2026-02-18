@@ -1,13 +1,13 @@
 
 const ctx = canvas.getContext("2d");
-//const ws = new WebSocket(`ws://localhost:8000/ws/bboxes`);
+const ws = new WebSocket(`ws://localhost:8000/ws/bboxes`);
 let bboxes;
 
 function fetchBBoxes() {
   fetch("/latest-bboxes")
       .then(res => res.json())
       .then(data => {
-          console.log(data)
+
           bboxes = data;
       })
       .catch(err => console.error("Failed to fetch bboxes:", err));
@@ -19,19 +19,19 @@ setInterval(() => {
 }, 70);
 console.log("We're in drawing.js");
 
-// ws.onmessage = (event) => {
-//     try {
-//         const data = JSON.parse(event.data);
-//         console.log(`Received bboxes: ${data.bboxes}`)
-//         bboxes = data.bboxes;  // store latest bounding boxes
-//         drawBoxes(bboxes);
-//     } catch (err) {
-//         console.error("Failed to parse WS message:", err);
-//     }
-// };
+ws.onmessage = (event) => {
+    try {
+        const data = JSON.parse(event.data);
+        console.log(`Received bboxes: ${data.bboxes}`)
+        bboxes = data.bboxes;  // store latest bounding boxes
+        drawBoxes(bboxes);
+    } catch (err) {
+        console.error("Failed to parse WS message:", err);
+    }
+};
 
-// ws.onopen = () => console.log("WebSocket connected");
-// ws.onclose = () => console.log("WebSocket disconnected");
+ws.onopen = () => console.log("WebSocket connected");
+ws.onclose = () => console.log("WebSocket disconnected");
 
 function drawBoxes(bboxes) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -39,7 +39,7 @@ function drawBoxes(bboxes) {
   ctx.lineWidth = 2;
   ctx.font = "14px sans-serif";
 
-  console.log("Trying to draw boxes");
+  //console.log("Trying to draw boxes");
   all_bboxes = bboxes.bboxes;
   artifact_bboxes = all_bboxes.artifact_tracks;
   robot_bboxes = all_bboxes.robot_tracks;

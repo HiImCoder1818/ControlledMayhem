@@ -9,8 +9,12 @@ import os
 
 dotenv.load_dotenv()
 
-FTC_USERNAME = os.environ.get("FTC-USERNAME")
-FTC_TOKEN = os.environ.get("FTC-TOKEN")
+FTC_USERNAME = "danielyang"
+FTC_TOKEN = "580CEA6C-A352-4802-A68A-065EB76CE7ED"
+"""
+FTC-USERNAME = danielyang
+FTC-TOKEN = 580CEA6C-A352-4802-A68A-065EB76CE7ED
+"""
 
 class FTCInfoFetcher:
     def __init__(self, season=2025):

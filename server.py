@@ -186,6 +186,8 @@ def team_notes():
         with open(user_notes_path + f"/{team}.txt", "r") as f:
             notes[user] = f.read()
 
+    print(notes)
+
     return jsonify(notes)
 
 @app.route('/team-stats', methods=['POST'])
@@ -271,8 +273,8 @@ async def connect_bbox_ws():
                         latest_bboxes = data
 
         except Exception as e:
-            print("[Flask] BBox WS disconnected, retrying in 1s...", e)
-            await asyncio.sleep(1)
+            print("[Flask] BBox WS disconnected, retrying in 10s...", e)
+            await asyncio.sleep(5*60)
 
 def start_bbox_ws_loop():
     loop = asyncio.new_event_loop()
@@ -349,7 +351,8 @@ def analysis():
     return render_template('live_analysis.html')
 
 if __name__ == '__main__':
-    asyncio.run_coroutine_threadsafe(forward_to_ai_server(), loop)
-    threading.Thread(target=start_bbox_ws_loop, daemon=True).start()
+    #asyncio.run_coroutine_threadsafe(forward_to_ai_server(), loop)
+    #threading.Thread(target=start_bbox_ws_loop, daemon=True).start()
 
-    app.run(port=3000, debug=True)
+    app.run(host="0.0.0.0", port=6700, debug=True)
+

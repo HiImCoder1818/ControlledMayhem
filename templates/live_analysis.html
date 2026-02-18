@@ -87,7 +87,7 @@
         </div>
 
         <script src="{{ url_for('static', filename='scripts/webRTC.js') }}"></script>
-        <script src="{{ url_for('static', filename='scripts/drawing.js') }}"></script>
+        <!-- <script src="{{ url_for('static', filename='scripts/drawing.js') }}"></script> -->
         <script>
             let metrics = [
                 "shooting-percentage", 
@@ -132,7 +132,7 @@
             const window_width = window.innerWidth;
             const initial_pos = parseFloat(localStorage.getItem("scroll-position")) || 0.7
             let isDragging = false;
-            let event = "none";
+            let event = localStorage.getItem("current-event");
 
             document.addEventListener('change', async function (e) {
                 const isSelect = e.target.matches('select[id^="team-id-"]');
@@ -267,12 +267,14 @@
                     option.textContent = event;
                     events_selector.appendChild(option);
                 }
+                events_selector.options[events_selector.selectedIndex].text = event;
                 for (const id of robot_ids){
                     add_id(id)
                 }
 
                 document.getElementById('events-select').addEventListener('change', function() {
                     event = this.value;
+                    localStorage.setItem("current-event", event);
                 });
 
             }

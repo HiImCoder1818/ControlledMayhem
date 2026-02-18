@@ -1,12 +1,12 @@
 {
     "pit_data": {
-        "max-auto": -1,
-        "max-teleop": -1,
-        "sort": "",
-        "turret": "",
-        "far-close": "",
-        "shoot-speed": -1,
-        "endgame": ""
+        "max-auto": "3",
+        "max-teleop": "24",
+        "sort": "no",
+        "turret": "no",
+        "far-close": "Close",
+        "shoot-speed": "7",
+        "endgame": "park"
     },
     "stats_data": {
         "shooting-percentage": -1,
